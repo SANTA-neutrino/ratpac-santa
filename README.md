@@ -33,10 +33,7 @@ Simulation code for KPIPE.
 
 ## Geometry
 
-* in data/kpipe/kpipe.geo
-* also have COLLADA format file for chroma: data/kpipe/kpipe.dae
-
-![alt tag](https://raw.github.com/twongjirad/ratpac-kpipe/develop/data/kpipe/kpipe_daeview.png)
+* in data/santa/santa.gdml
 
 ## Optical Detector
 
