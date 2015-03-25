@@ -25,7 +25,7 @@
 /vis/viewer/set/viewpointThetaPhi 90. 0.
 #
 # Specify zoom value:
-/vis/viewer/zoom 2.0
+#/vis/viewer/zoom 2.0
 #
 # Specify style (surface or wireframe):
 #/vis/viewer/set/style wireframe
