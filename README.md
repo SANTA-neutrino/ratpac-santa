@@ -34,7 +34,7 @@ Simulation code for SANTA.
 ## Geometry
 
 * in data/santa/santa.gdml
-![alt tag](https://raw.github.com/twongjirad/ratpac-santa/master/data/santa/santa_gdml.png)
+![alt tag](https://raw.github.com/SANTA-neutrino/ratpac-santa/master/data/santa/santa_gdml.png)
 
 
 ## Optical Detector
