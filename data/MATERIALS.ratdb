@@ -622,6 +622,18 @@ elemprop: [0.0703d, 0.558d, 0.3717d],
 
 {
 name: "MATERIAL",
+index: "acrylic_uvt_good",
+valid_begin : [0, 0],
+valid_end : [0, 0],
+density: 1.14d,
+nelements: 3,
+nmaterials: 0,
+elements: ["Hydrogen", "Carbon", "Oxygen"],
+elemprop: [0.0703d, 0.558d, 0.3717d],
+}
+
+{
+name: "MATERIAL",
 index: "acrylic_polycast",
 valid_begin : [0, 0],
 valid_end : [0, 0],
@@ -630,6 +642,18 @@ nelements: 3,
 nmaterials: 0,
 elements: ["Hydrogen", "Carbon", "Oxygen"],
 elemprop: [0.0703d, 0.558d, 0.3717d],
+}
+
+{
+name: "MATERIAL",
+index: "acrylic_uvt_good_boronated",
+valid_begin : [0, 0],
+valid_end : [0, 0],
+density: 1.14d,
+nelements: 4,
+nmaterials: 0,
+elements: ["Hydrogen", "Carbon", "Oxygen","Boron"],
+elemprop: [0.0668d, 0.5301d, 0.3531d, 0.050d],
 }
 
 {
@@ -895,6 +919,18 @@ index: "liquid_Ar",
 valid_begin : [0, 0],
 valid_end : [0, 0],
 density: 1.4d,
+nelements: 1,
+elements: ["Argon"],
+elemprop: [1.0d],
+nmaterials: 0,
+}
+
+{
+name: "MATERIAL",
+index: "gas_Ar",
+valid_begin : [0, 0],
+valid_end : [0, 0],
+density: 0.001784d,
 nelements: 1,
 elements: ["Argon"],
 elemprop: [1.0d],

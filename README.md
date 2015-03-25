@@ -1,7 +1,7 @@
 
-# KPIPE RAT Fork
+# SANTA RAT Fork
 
-Simulation code for KPIPE.
+Simulation code for SANTA.
 
 ## Checking out
 
@@ -22,7 +22,7 @@ Simulation code for KPIPE.
 
 ## Running
 * rat
-* /control/execute mac/kpipe.mac (will bring up and initialize geometry)
+* /control/execute mac/santa.mac (will bring up and initialize geometry)
 
 ## Adding a feature
 * git checkout develop
@@ -34,6 +34,8 @@ Simulation code for KPIPE.
 ## Geometry
 
 * in data/santa/santa.gdml
+![alt tag](https://raw.github.com/twongjirad/ratpac-santa/master/data/santa/santa_gdml.png)
+
 
 ## Optical Detector
 

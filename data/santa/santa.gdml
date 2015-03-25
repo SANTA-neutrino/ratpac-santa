@@ -6,6 +6,7 @@
 <materials>
   <element name="bromine" formula="Br" Z="35"> <atom value="79.904"/> </element>
   <element name="hydrogen" formula="H" Z="1">  <atom value="1.0079"/> </element>
+  <element name="boron" formula="B" Z="5"> <atom value="10.81"/>  </element>
   <element name="nitrogen" formula="N" Z="7">  <atom value="14.0067"/> </element>
   <element name="oxygen" formula="O" Z="8">  <atom value="15.999"/> </element>
   <element name="aluminum" formula="Al" Z="13"> <atom value="26.9815"/>  </element>
@@ -19,6 +20,93 @@
   <element name="magnesium" formula="Mg" Z="12"> <atom value="24.305"/>   </element>
   <element name="sodium" formula="Na" Z="11"> <atom value="22.99"/>    </element>
   <element name="titanium" formula="Ti" Z="22"> <atom value="47.867"/>   </element>
-  <element name="argon" formula="Ar" Z="18"> <atom value="39.9480"/>  </element>
+  <element name="Argon" formula="Ar" Z="18"> <atom value="39.9480"/>  </element>
+
+  <material formula=" " name="gas_Ar">
+    <D value="0.001784" unit="g/cm3"/>
+    <fraction n="1.0" ref="Argon"/>
+  </material>
+
+  <material formula=" " name="acrylic_uvt_good">
+    <D value="1.14" unit="g/cm3"/>
+    <fraction n="0.0703" ref="hydrogen"/>
+    <fraction n="0.558" ref="carbon"/>
+    <fraction n="0.3717" ref="oxygen"/>
+  </material>
+  
+  <material formula=" " name="acrylic_uvt_good_boronated">
+    <D value="1.14" unit="g/cm3"/>
+    <fraction n="0.0668" ref="hydrogen"/>
+    <fraction n="0.5301" ref="carbon"/>
+    <fraction n="0.3531" ref="oxygen"/>
+    <fraction n="0.050" ref="boron"/>
+  </material>
+    
+  
 </materials>
+
+<solids>
+  <box name="world"
+       lunit="m"
+       x="20.0"
+       y="20.0"
+       z="20.0" />
+
+  <box name="drift"
+       lunit="cm"
+       x="1000.0"
+       y="1000.0"
+       z="250.0" />
+  <box name="target_layer"
+       lunit="cm"
+       x="1000.0"
+       y="1000.0"
+       z="1.0" />
+  <box name="capture_layer"
+       lunit="cm"
+       x="1000.0"
+       y="1000.0"
+       z="6.0" />
+</solids>
+
+<structure>
+  <volume name="volTarget">
+    <materialref ref="acrylic_uvt_good"/>
+    <solidref ref="target_layer"/>
+  </volume>
+  <volume name="volCapture">
+    <materialref ref="acrylic_uvt_good_boronated"/>
+    <solidref ref="capture_layer"/>
+  </volume>
+
+  <volume name="volDrift">
+    <materialref ref="gas_Ar"/>
+    <solidref ref="drift"/>
+    <physvol>
+      <volumeref ref="volTarget"/>
+      <position name="posTarget" x="0.0" y="0.0" z="0.0"/>
+    </physvol>
+    <physvol name="pvCaptureForward">
+      <volumeref ref="volCapture"/>
+      <position name="posCaptureForward" x="0.0" y="0.0" z="100.0"/>
+    </physvol>
+    <physvol name="pvCaptureBackward">
+      <volumeref ref="volCapture"/>
+      <position name="posCaptureBackward" x="0.0" y="0.0" z="-100.0"/>
+    </physvol>
+  </volume>
+  <volume name="volWorld">
+    <materialref ref="air"/>
+    <solidref ref="world"/>
+    <physvol>
+      <volumeref ref="volDrift"/>
+      <position name="posDrift" x="0.0" y="0.0" z="0.0"/>
+    </physvol>
+  </volume>
+</structure>
+
+<setup name="Default" version="1.0">
+  <world ref="volWorld" />
+</setup>
+
 </gdml>
