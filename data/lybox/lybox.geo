@@ -1,16 +1,18 @@
 {
 name: "GEO",
+index: "gdml_file",
 valid_begin: [0, 0],
 valid_end: [0, 0],
-gdml_file: "santa.gdml",
+gdml_file: "lybox.gdml",
+opdet_lv_name: "volSiPMbox",
 }
 
 {
 name: "GEO",
-index: "border_target_inner",
+index: "scint_sipm_surface",
 valid_begin: [0, 0],
 valid_end: [0,0],
-mother:"border",
+mother:"scint",
 type:"border",
 volume1:"pvScint",
 volume2:"SiPM0",
