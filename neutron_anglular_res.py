@@ -10,8 +10,8 @@ if len(sys.argv)>=2:
 
 reader = DSReader(inputfile) # scintillation+reflections
 nevents = reader.GetTotal()
-if nevents>200:
-    nevents = 200
+if nevents>400:
+    nevents = 400
 
 print "MC file has ",nevents,"events"
 
@@ -62,8 +62,9 @@ for iev in xrange(0,nevents):
     #print "neutron final position: ",tracknode.GetEndpoint().X(),tracknode.GetEndpoint().Y(),tracknode.GetEndpoint().Z()
     #print "neutron travel direction: ",n_dir.X(),n_dir.Y(),n_dir.Z()
     n_cos = n_dir.X()*n_initdir.X() + n_dir.Y()*n_initdir.Y() + n_dir.Z()*n_initdir.Z()
-    #print "Neutron travel cos: ",n_cos
-    hncos.Fill( n_cos )
+    print "Neutron travel cos: ",n_cos," last process=",tracknode.GetProcess()
+    if tracknode.GetProcess()=="NeutronInelastic":
+        hncos.Fill( n_cos )
 
 out.Write()
 
