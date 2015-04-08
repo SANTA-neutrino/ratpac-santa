@@ -207,4 +207,4 @@ python neutron_anglular_res.py test.root
 ```
 
 Should make something like this:
-![alt tag](https://raw.github.com/SANTA-neutrino/ratpac-santa/master/data/santa/n_angular_res.png)
+![alt tag](https://raw.github.com/SANTA-neutrino/ratpac-santa/develop/data/santa/n_angular_res.png)
