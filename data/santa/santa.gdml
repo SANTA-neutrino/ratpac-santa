@@ -4,23 +4,19 @@
       xsi:noNamespaceSchemaLocation="http://service-spi.web.cern.ch/service-spi/app/releases/GDML/schema/gdml.xsd" >
 
 <materials>
-  <element name="bromine" formula="Br" Z="35"> <atom value="79.904"/> </element>
   <element name="hydrogen" formula="H" Z="1">  <atom value="1.0079"/> </element>
   <element name="boron" formula="B" Z="5"> <atom value="10.81"/>  </element>
   <element name="nitrogen" formula="N" Z="7">  <atom value="14.0067"/> </element>
   <element name="oxygen" formula="O" Z="8">  <atom value="15.999"/> </element>
-  <element name="aluminum" formula="Al" Z="13"> <atom value="26.9815"/>  </element>
-  <element name="silicon" formula="Si" Z="14"> <atom value="28.0855"/>  </element>
   <element name="carbon" formula="C" Z="6">  <atom value="12.0107"/>  </element>
-  <element name="potassium" formula="K" Z="19"> <atom value="39.0983"/>  </element>
-  <element name="chromium" formula="Cr" Z="24"> <atom value="51.9961"/>  </element>
-  <element name="iron" formula="Fe" Z="26"> <atom value="55.8450"/>  </element>
-  <element name="nickel" formula="Ni" Z="28"> <atom value="58.6934"/>  </element>
-  <element name="calcium" formula="Ca" Z="20"> <atom value="40.078"/>   </element>
-  <element name="magnesium" formula="Mg" Z="12"> <atom value="24.305"/>   </element>
-  <element name="sodium" formula="Na" Z="11"> <atom value="22.99"/>    </element>
-  <element name="titanium" formula="Ti" Z="22"> <atom value="47.867"/>   </element>
   <element name="Argon" formula="Ar" Z="18"> <atom value="39.9480"/>  </element>
+
+  <material formula=" " name="air">
+    <D value="0.001205" unit="g/cc"/>
+    <fraction n="0.781154" ref="nitrogen"/>
+    <fraction n="0.209476" ref="oxygen"/>
+    <fraction n="0.00937" ref="Argon"/>
+  </material>
 
   <material formula=" " name="gas_Ar">
     <D value="0.001784" unit="g/cm3"/>
@@ -41,7 +37,6 @@
     <fraction n="0.3531" ref="oxygen"/>
     <fraction n="0.050" ref="boron"/>
   </material>
-    
   
 </materials>
 
