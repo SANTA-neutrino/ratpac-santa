@@ -193,3 +193,18 @@ Track 6: Li7[0.0]  parent: neutron(2)
 ```
 
 Neutron goes to capture layer. Undergoes NeutronInelastic and produces gamma, alpha, and Li7.
+
+## Example analysis using truth
+
+Make events. (Note this will need to be replaced by a proper Sensitive detector. Using truth tracks like this is not efficient. 1000 events requires >300 MB file! Not good.)
+```
+rat mac/ibd_santa.mac -o test.root
+```
+
+Then run script
+```
+python neutron_anglular_res.py test.root
+```
+
+Should make something like this:
+![alt tag](https://raw.github.com/SANTA-neutrino/ratpac-santa/master/data/santa/n_angular_res.png)
