@@ -7,18 +7,24 @@
 
 include ${CRYHOME}/Makefile.common  #....define compiler and any other common settings
 
-CXX = clang++
+#CXX = clang++
 EXE = testMain
+EXE = testMain cosmic_interface
+
 CXXFLAGS += -I${CRYHOME}/src
 
 ROOT_INCLUDES = `root-config --cflags`
 ROOT_LIBS = `root-config --libs --glibs` -lGeom
 CXXFLAGS += ${ROOT_INCLUDES}
 
-all: testMain
+all: testMain cosmic_interface
 
 #....rule to make test executables
 test%: test%.cc ${CRYHOME}/lib/libCRY.a
+	$(CXX) $(CXXFLAGS) -o $@ $@.cc -L${CRYHOME}/lib -lCRY ${ROOT_LIBS}
+
+#....rule to make interface executable
+cosmic_interface: cosmic_interface.cc ${CRYHOME}/lib/libCRY.a
 	$(CXX) $(CXXFLAGS) -o $@ $@.cc -L${CRYHOME}/lib -lCRY ${ROOT_LIBS}
  
 #....testRoot is different
