@@ -12,82 +12,115 @@
   <element name="Argon" formula="Ar" Z="18"> <atom value="39.9480"/>  </element>
 
   <material formula=" " name="air">
-    <D value="0.001205" unit="g/cc"/>
+    <D value="0.001205" unit="g/cc"/>  <!-- changed from 0.001205-->
     <fraction n="0.781154" ref="nitrogen"/>
     <fraction n="0.209476" ref="oxygen"/>
     <fraction n="0.00937" ref="Argon"/>
   </material>
 
   <material formula=" " name="gas_Ar">
-    <D value="0.001784" unit="g/cm3"/>
+    <D value="0.001784" unit="g/cm3"/> <!-- changed density from 0.001784-->
     <fraction n="1.0" ref="Argon"/>
   </material>
 
-  <material formula=" " name="acrylic_uvt_good">
+  <material formula=" " name="EJ_200">
     <D value="1.14" unit="g/cm3"/>
-    <fraction n="0.0703" ref="hydrogen"/>
-    <fraction n="0.558" ref="carbon"/>
-    <fraction n="0.3717" ref="oxygen"/>
+    <fraction n="0.0856" ref="hydrogen"/>
+    <fraction n="0.9144" ref="carbon"/>
+  </material>
+  
+  <material formula=" " name="EJ_254_boronated">
+    <D value="1.026" unit="g/cm3"/>
+    <fraction n="0.0845" ref="hydrogen"/>
+    <fraction n="0.8631" ref="carbon"/>
+    <fraction n="0.0524" ref="boron"/>
+  </material>
+  
+ <!-- <material formula=" " name="acrylic_uvt_good">
+      <D value="1.14" unit="g/cm3"/>
+      <fraction n="0.0703" ref="hydrogen"/>
+      <fraction n="0.558" ref="carbon"/>
+      <fraction n="0.3717" ref="oxygen"/>
   </material>
   
   <material formula=" " name="acrylic_uvt_good_boronated">
-    <D value="1.14" unit="g/cm3"/>
-    <fraction n="0.0668" ref="hydrogen"/>
-    <fraction n="0.5301" ref="carbon"/>
-    <fraction n="0.3531" ref="oxygen"/>
-    <fraction n="0.050" ref="boron"/>
-  </material>
+      <D value="1.14" unit="g/cm3"/>
+      <fraction n="0.0668" ref="hydrogen"/>
+      <fraction n="0.5301" ref="carbon"/>
+      <fraction n="0.3531" ref="oxygen"/>
+      <fraction n="0.050" ref="boron"/>
+  </material> -->
   
 </materials>
 
 <solids>
   <box name="world"
        lunit="m"
-       x="20.0"
-       y="20.0"
-       z="20.0" />
+       x="50.0"
+       y="50.0"
+       z="50.0" /> <!-- was 20 -->
 
   <box name="drift"
        lunit="cm"
        x="1000.0"
        y="1000.0"
-       z="250.0" />
+       z="250.0" /> <!-- was 250 -->
   <box name="target_layer"
        lunit="cm"
-       x="1000.0"
-       y="1000.0"
-       z="1.0" />
+       x="200.0"
+       y="200.0"
+       z="1.0" /> <!-- was z = "1.0" before, then 0.5 -->
+  <box name="generator_layer"
+       lunit="cm"
+       x="0.1"
+       y="0.1"
+       z="1.0" /> <!-- was 0.5 -->
   <box name="capture_layer"
        lunit="cm"
-       x="1000.0"
-       y="1000.0"
-       z="6.0" />
+       x="200.0"
+       y="200.0"
+       z="6.0" /> <!-- was 6.0 -->
 </solids>
 
 <structure>
   <volume name="volTarget">
-    <materialref ref="acrylic_uvt_good"/>
+    <materialref ref="EJ_200"/>
     <solidref ref="target_layer"/>
   </volume>
   <volume name="volCapture">
-    <materialref ref="acrylic_uvt_good_boronated"/>
+    <materialref ref="EJ_254_boronated"/>
     <solidref ref="capture_layer"/>
+  </volume>
+  
+<!--  <volume name="volGenerator">-->
+<!--      <materialref ref="EJ_200"/>-->
+<!--      <solidref ref="generator_layer"/>-->
+<!--  </volume>-->
+
+  <!--This layer is where we'll generate events for now-->
+  <volume name="volTarget_gen">
+    <materialref ref="EJ_200"/>
+    <solidref ref="target_layer"/>
+<!--    <physvol>-->
+<!--      <volumeref ref="volGenerator"/>-->
+<!--      <position name="posGenerator" x="0.0" y="0.0" z="0.0"/>-->
+<!--    </physvol>-->
   </volume>
 
   <volume name="volDrift">
     <materialref ref="gas_Ar"/>
     <solidref ref="drift"/>
     <physvol>
-      <volumeref ref="volTarget"/>
-      <position name="posTarget" x="0.0" y="0.0" z="0.0"/>
+      <volumeref ref="volTarget_gen"/>
+      <position name="posTarget_gen" x="0.0" y="0.0" z="0.0"/>
     </physvol>
     <physvol name="pvCaptureForward">
       <volumeref ref="volCapture"/>
-      <position name="posCaptureForward" x="0.0" y="0.0" z="100.0"/>
+      <position name="posCaptureForward" x="0.0" y="0.0" z="1000.0"/> <!-- was 100.0 NOTE UNITS ARE IN mm!!! -->
     </physvol>
     <physvol name="pvCaptureBackward">
       <volumeref ref="volCapture"/>
-      <position name="posCaptureBackward" x="0.0" y="0.0" z="-100.0"/>
+      <position name="posCaptureBackward" x="0.0" y="0.0" z="-1000.0"/> <!-- was -100.0-->
     </physvol>
   </volume>
   <volume name="volWorld">
