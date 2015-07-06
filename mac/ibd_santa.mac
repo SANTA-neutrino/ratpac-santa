@@ -16,9 +16,9 @@
 /rat/proclast outroot
 #END EVENT LOOP
 
-/generator/add combo ibd:point:uniform
+/generator/add combo ibd:fill:uniform
 /generator/vtx/set 0 0 1.0
 /generator/pos/set 0 0 0
 /generator/rate/set 1.0
 
-/run/beamOn 1000
+/run/beamOn 10000
