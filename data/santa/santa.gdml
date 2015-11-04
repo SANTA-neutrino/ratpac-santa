@@ -77,15 +77,15 @@
   <volume name="volDrift">
     <materialref ref="gas_Ar"/>
     <solidref ref="drift"/>
-    <physvol>
+    <physvol name="pvTargetCH0">
       <volumeref ref="volTarget"/>
       <position name="posTarget" x="0.0" y="0.0" z="0.0"/>
     </physvol>
-    <physvol name="pvCaptureForward">
+    <physvol name="pvCaptureForwardCH1">
       <volumeref ref="volCapture"/>
       <position name="posCaptureForward" x="0.0" y="0.0" z="100.0"/>
     </physvol>
-    <physvol name="pvCaptureBackward">
+    <physvol name="pvCaptureBackwardCH2">
       <volumeref ref="volCapture"/>
       <position name="posCaptureBackward" x="0.0" y="0.0" z="-100.0"/>
     </physvol>
@@ -93,7 +93,7 @@
   <volume name="volWorld">
     <materialref ref="air"/>
     <solidref ref="world"/>
-    <physvol>
+    <physvol name="pvDriftCH3">
       <volumeref ref="volDrift"/>
       <position name="posDrift" x="0.0" y="0.0" z="0.0"/>
     </physvol>

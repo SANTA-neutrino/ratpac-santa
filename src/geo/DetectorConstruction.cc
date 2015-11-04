@@ -16,6 +16,7 @@
 #include <RAT/GeoBuilder.hh>
 #include <RAT/Materials.hh>
 #include <RAT/GLG4SimpleOpDetSD.hh>
+#include <RAT/GLG4SimpleTrackerHackSD.hh>
 #include <RAT/GeoFactory.hh>
 
 #include <RAT/DetectorFactory.hh>
@@ -93,7 +94,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct() {
   fWorldPhys = geo.ConstructAll();
 
   if ( geo.GetBuilderSource()==GeoBuilder::GDMLFILE ) {
-    SetupGDMLSD();
+    SetupSimpleOpDetSD();
+    SetupSimpleTrackerSD();
   }
 
   info << "Dump Surface Info...\n";
@@ -116,12 +118,13 @@ DetectorConstruction* DetectorConstruction::GetDetectorConstruction() {
   return sDetectorConstruction;
 }
 
-void DetectorConstruction::SetupGDMLSD() {
+void DetectorConstruction::SetupSimpleOpDetSD() {
   DBLinkGroup lgeo = DB::Get()->GetLinkGroup("GEO");
 
   // find GDML table
   DBLinkGroup::iterator i_table;
   for (i_table = lgeo.begin(); i_table != lgeo.end(); ++i_table) {
+    // we look for the entry that sets this up
     string name = i_table->first;
     DBLinkPtr table = i_table->second;
     string gdmlfilename;
@@ -133,49 +136,250 @@ void DetectorConstruction::SetupGDMLSD() {
     }
     info << "GeoBuilder used GDML file as source of geometry." << newline;
 
-    // opdet sd name
-    G4String opdet_lv_name;
+    // get name of logical volumes which will be sensitive surfaces
+    std::vector<std::string> opdet_lv_names;
     try {
-      opdet_lv_name = table->GetS("opdet_lv_name");
+      opdet_lv_names = table->GetSArray("opdet_lv_name");
     }
     catch (DBNotFoundError &e) {
-      // do nothing
-      info << "Did not find 'opdet_lv_name'. Proceeding without OpDetSD assignment." << newline;
+      try {
+	std::string opdet_lv_name = table->GetS("opdet_lv_name");
+	opdet_lv_names.push_back( opdet_lv_name );
+      }
+      catch (DBNotFoundError &e) {
+	// do nothing
+	info << "[WARNING] Did not find 'opdet_lv_name'. Proceeding without OpDetSD assignment." << newline;
+	return;
+      }
     }
-    info << "Creating GLG4SimpleOpDetSD. Adding volumes as opdet channels for LVs with name='" << opdet_lv_name << "'" << newline;
+    
+    info << "Creating GLG4SimpleOpDetSD. Sensitive Logical Volumes include those whose names='";
+    for ( std::vector<std::string>::iterator it=opdet_lv_names.begin(); it!=opdet_lv_names.end(); it++ )
+      info << *it << " ";
+    info << "'" << newline;
+    // make sensitive detector
     G4SDManager* sdman = G4SDManager::GetSDMpointer();
     GLG4SimpleOpDetSD* opdetsd = new GLG4SimpleOpDetSD( "opdet_lv_name" );
     sdman->AddNewDetector(opdetsd);
-    G4PhysicalVolumeStore* pvolumes = G4PhysicalVolumeStore::GetInstance();
+    
+    // assign SD to logical volumes. We also make a list of physical volumes
+    G4LogicalVolumeStore* lvolumes = G4LogicalVolumeStore::GetInstance();
     int nopdets = 0;
-    for ( G4PhysicalVolumeStore::iterator it=pvolumes->begin(); it!=pvolumes->end(); it++) {
-      G4VPhysicalVolume* volume = (*it);
-      if ( volume->GetLogicalVolume()->GetName()==opdet_lv_name ) {
-	G4String pvname = volume->GetName();
-	volume->GetLogicalVolume()->SetSensitiveDetector( opdetsd );
-	int channelid;
-	size_t numstart,numend;
-	try {
-	  numstart = pvname.find_first_of("1234567890");
-	  numend = pvname.find_first_not_of("1234567890",numstart+1);
-	  channelid = atoi( pvname.substr(numstart, numend-numstart).c_str() );
-	}
-	catch (int e) {
-	  Log::Die( "Error parsing OpDet physical volume name for channel ID. Need to place a number in the name." );
-	}
-	opdetsd->AddOpDetChannel( channelid, volume );
-	nopdets += 1;
-	//info << "Found OpDet instance. PVname=" << volume->GetName() << " ChannelID=" << channelid << newline;
+    for ( std::vector<std::string>::iterator it=opdet_lv_names.begin(); it!=opdet_lv_names.end(); it++ ) {
+      G4LogicalVolume* lv = lvolumes->GetVolume( *it );
+      if (lv) {
+	lv->SetSensitiveDetector( opdetsd );
+	nopdets++;
+	//std::cout << "Assigning as OpDetSD: " << lv->GetName() << std::endl;
       }
     }
-    info << "Found OpDet " << nopdets << " instances." << newline;
+    info << "Number of sensitive logical volumes found for GLG4SimpleOpDetSD: " << nopdets << newline;
+
+    // get list of strings which we will use to define optical detector channels.
+    // they will have to contain in their daughter volumes, a sensitive detector
+    std::vector<std::string> opchannel_pv_names;
+    try {
+      opchannel_pv_names = table->GetSArray("opchannel_pv_name");
+    }
+    catch (DBNotFoundError &e) {
+      try {
+	std::string opchannel_pv_name = table->GetS("opchannel_pv_name");
+        opchannel_pv_names.push_back( opchannel_pv_name );
+      }
+      catch (DBNotFoundError &e) {
+        info << "[WARNING] Did not find 'opchannel_pv_name'." << newline;
+      }
+    }
+    info << "Number of strings to search for GLG4SimpleOpDetSD Optical Channels: " << opchannel_pv_names.size() << newline;
+    
+    G4PhysicalVolumeStore* pvolumes = G4PhysicalVolumeStore::GetInstance();
+    int nopchannels = 0;
+    for ( G4PhysicalVolumeStore::iterator it=pvolumes->begin(); it!=pvolumes->end(); it++) {
+      G4VPhysicalVolume* volume = (*it);
+      bool found = false;
+      std::string opchan_name;
+      for ( std::vector<std::string>::iterator it_pvname=opchannel_pv_names.begin(); it_pvname!=opchannel_pv_names.end(); it_pvname++ )
+	if ( volume->GetName().contains( *it_pvname ) ) {
+	  opchan_name = *it_pvname;
+	  found = true;
+	  break;
+	}
+      
+      G4LogicalVolume* lv = volume->GetLogicalVolume();
+      if (found) {
+	//std::cout << "found opchan pv name match: " << opchan_name << std::endl;
+	G4String pvname = volume->GetName();
+	// now we have to find a daughter with optical channel
+	// these needs to be a recursive function
+	bool issensitive = false;
+	if ( lv->GetSensitiveDetector()==opdetsd ) {
+	  issensitive = true;
+	}
+	else {
+	  for (G4int idaughter=0; idaughter<lv->GetNoDaughters(); idaughter++ ) {
+	    G4LogicalVolume* lv_daughter = lv->GetDaughter(idaughter)->GetLogicalVolume();
+	    if ( lv_daughter->GetSensitiveDetector()==opdetsd ) {
+	      issensitive = true;
+	      break;
+	    }
+	  }
+	}
+	//std::cout << " is sensitive: " << issensitive << std::endl;
+
+	if ( issensitive ) {
+	  int channelid;
+	  size_t numstart,numend;
+	  try {
+	    numstart = pvname.find_first_of("1234567890");
+	    numend = pvname.find_first_not_of("1234567890",numstart+1);
+	    channelid = atoi( pvname.substr(numstart, numend-numstart).c_str() );
+	  }
+	  catch (int e) {
+	    Log::Die( "Error parsing OpDet physical volume name for channel ID. Need to place a number in the name." );
+	  }
+	  opdetsd->AddOpDetChannel( channelid, volume );
+	  nopchannels += 1;
+	  info << "Found Optical Channel instance. PVname=" << volume->GetName() << " ChannelID=" << channelid << " CopyNo=" << volume->GetCopyNo() << newline;
+	}//end of is sensitive
+      }//end of if found channel name
+    }//loop over physical volumes
+    info << "Found " << nopchannels << " Optical Channels." << newline;
     
     break;
   }
 }
 
-void DetectorConstruction::SetupGDMLSurfaces() {
-  DBLinkGroup lgeo = DB::Get()->GetLinkGroup("GEO");
+  void DetectorConstruction::SetupSimpleTrackerSD() {
+    DBLinkGroup lgeo = DB::Get()->GetLinkGroup("GEO");
+    
+    // find GDML table
+    DBLinkGroup::iterator i_table;
+    for (i_table = lgeo.begin(); i_table != lgeo.end(); ++i_table) {
+      string name = i_table->first;
+      DBLinkPtr table = i_table->second;
+      string gdmlfilename;
+      try {
+	gdmlfilename = table->GetS("gdml_file");
+      }
+      catch (DBNotFoundError &e) {
+	continue;
+      }
+
+      // get name of logical volumes which will be sensitive surfaces
+      std::vector<std::string> tracker_lv_names;
+      try {
+	tracker_lv_names = table->GetSArray("tracker_lv_name");
+      }
+      catch (DBNotFoundError &e) {
+	try {
+	  std::string tracker_lv_name = table->GetS("tracker_lv_name");
+	  tracker_lv_names.push_back( tracker_lv_name );
+	}
+	catch (DBNotFoundError &e) {
+	  // do nothing
+	  info << "[WARNING] Did not find 'tracker_lv_name'. Proceeding without TrackerSD assignment." << newline;
+	  return;
+	}
+      }
+    
+      info << "Creating GLG4SimpleTrackerSD. Sensitive Logical Volumes include those whose names='";
+      for ( std::vector<std::string>::iterator it=tracker_lv_names.begin(); it!=tracker_lv_names.end(); it++ )
+	info << *it << " ";
+      info << "'" << newline;
+      // make sensitive detector
+      G4SDManager* sdman = G4SDManager::GetSDMpointer();
+      GLG4SimpleTrackerHackSD* trackersd = new GLG4SimpleTrackerHackSD( "SimpleTrackerHack" );
+      sdman->AddNewDetector(trackersd);
+    
+      // assign SD to logical volumes. We also make a list of physical volumes
+      G4LogicalVolumeStore* lvolumes = G4LogicalVolumeStore::GetInstance();
+      int ntrackers = 0;
+      for ( std::vector<std::string>::iterator it=tracker_lv_names.begin(); it!=tracker_lv_names.end(); it++ ) {
+	G4LogicalVolume* lv = lvolumes->GetVolume( *it );
+	if (lv) {
+	  lv->SetSensitiveDetector( trackersd );
+	  ntrackers++;
+	  //std::cout << "Assigning as TrackerSD: " << lv->GetName() << std::endl;
+	}
+      }
+      info << "Number of sensitive logical volumes found for GLG4SimpleTrackerSD: " << ntrackers << newline;
+
+      // get list of strings which we will use to define optical detector channels.
+      // they will have to contain in their daughter volumes, a sensitive detector
+      std::vector<std::string> tracker_pv_names;
+      try {
+	tracker_pv_names = table->GetSArray("tracker_pv_name");
+      }
+      catch (DBNotFoundError &e) {
+	try {
+	  std::string tracker_pv_name = table->GetS("tracker_pv_name");
+	  tracker_pv_names.push_back( tracker_pv_name );
+	}
+	catch (DBNotFoundError &e) {
+	  info << "[WARNING] Did not find 'tracker_pv_name'." << newline;
+	}
+      }
+      info << "Number of strings to search for GLG4SimpleTrackerSD Tracker Channels: " << tracker_pv_names.size() << newline;
+    
+      G4PhysicalVolumeStore* pvolumes = G4PhysicalVolumeStore::GetInstance();
+      int ntracker_channels = 0;
+      for ( G4PhysicalVolumeStore::iterator it=pvolumes->begin(); it!=pvolumes->end(); it++) {
+	G4VPhysicalVolume* volume = (*it);
+	bool found = false;
+	std::string opchan_name;
+	for ( std::vector<std::string>::iterator it_pvname=tracker_pv_names.begin(); it_pvname!=tracker_pv_names.end(); it_pvname++ )
+	  if ( volume->GetName().contains( *it_pvname ) ) {
+	    opchan_name = *it_pvname;
+	    found = true;
+	    break;
+	  }
+      
+	G4LogicalVolume* lv = volume->GetLogicalVolume();
+	if (found) {
+	  //std::cout << "found opchan pv name match: " << opchan_name << std::endl;
+	  G4String pvname = volume->GetName();
+	  // now we have to find a daughter with optical channel
+	  // these needs to be a recursive function
+	  bool issensitive = false;
+	  if ( lv->GetSensitiveDetector()==trackersd ) {
+	    issensitive = true;
+	  }
+	  else {
+	    for (G4int idaughter=0; idaughter<lv->GetNoDaughters(); idaughter++ ) {
+	      G4LogicalVolume* lv_daughter = lv->GetDaughter(idaughter)->GetLogicalVolume();
+	      if ( lv_daughter->GetSensitiveDetector()==trackersd ) {
+		issensitive = true;
+		break;
+	      }
+	    }
+	  }
+	  //std::cout << " is sensitive: " << issensitive << std::endl;
+
+	  if ( issensitive ) {
+	    int channelid;
+	    size_t numstart,numend;
+	    try {
+	      numstart = pvname.find_first_of("1234567890");
+	      numend = pvname.find_first_not_of("1234567890",numstart+1);
+	      channelid = atoi( pvname.substr(numstart, numend-numstart).c_str() );
+	    }
+	    catch (int e) {
+	      Log::Die( "Error parsing Tracker physical volume name for channel ID. Need to place a number in the name." );
+	    }
+	    trackersd->AddTrackerChannel( channelid, volume );
+	    ntracker_channels += 1;
+	    info << "Found Tracker Channel instance. PVname=" << volume->GetName() << " ChannelID=" << channelid << " CopyNo=" << volume->GetCopyNo() << newline;
+	  }//end of is sensitive
+	}//end of if found channel name
+      }//loop over physical volumes
+      info << "Found " << ntracker_channels << " Tracker Channels." << newline;
+    
+      break;
+    }
+  }
+  
+  void DetectorConstruction::SetupGDMLSurfaces() {
+    DBLinkGroup lgeo = DB::Get()->GetLinkGroup("GEO");
 
   // find GDML table
   DBLinkGroup::iterator i_table;

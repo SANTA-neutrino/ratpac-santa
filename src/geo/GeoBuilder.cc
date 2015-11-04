@@ -159,8 +159,7 @@ G4VPhysicalVolume *GeoBuilder::ConstructAll(std::string geo_tablename)
         } catch (DBNotFoundError &e) {
         Log::Die("GeoBuilder error: border " + name + " has no volume2");
         }
-        //G4LogicalVolume* LogVol1 = GeoFactory::FindPhysMother(volume1);
-        //G4LogicalVolume* LogVol2 = GeoFactory::FindPhysMother(volume2);
+
         G4VPhysicalVolume* LogVol1 = GeoFactory::FindPhysMother(volume1); // redundant
         G4VPhysicalVolume* LogVol2 = GeoFactory::FindPhysMother(volume2); // redundant
 

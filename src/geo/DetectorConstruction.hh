@@ -31,7 +31,8 @@ protected:
   static DetectorConstruction* sDetectorConstruction;
   G4VPhysicalVolume* fWorldPhys;
 
-  void SetupGDMLSD();
+  void SetupSimpleOpDetSD();
+  void SetupSimpleTrackerSD();
   void SetupGDMLSurfaces();
 };
 
