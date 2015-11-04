@@ -125,8 +125,9 @@ namespace RAT {
 				for (Z=1; Z<=GLG4VertexGen_Gun::numberOfElements; Z++){
 					if (elementName == GLG4VertexGen_Gun::theElementNames[Z-1]) break;
 					if (Z <= GLG4VertexGen_Gun::numberOfElements){
-						newTestGunG4Code=G4IonTable::GetIonTable()->GetIon(Z, A, 0.0);
-						G4cout << " Spectrum Vertex: Setting ion with A = " << A << " Z = " << Z << G4endl;
+					  //newTestGunG4Code=Gsrc/gen/VertexGen_Spectrum.cc:1284IonTable::GetIonTable()->GetIon(Z, A, 0.0);
+					  newTestGunG4Code=G4ParticleTable::GetParticleTable()->GetIonTable()->GetIon(Z, A);
+					  G4cout << " Spectrum Vertex: Setting ion with A = " << A << " Z = " << Z << G4endl;
 					}
 				}
 			}	

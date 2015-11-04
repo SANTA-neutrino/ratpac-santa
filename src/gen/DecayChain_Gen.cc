@@ -77,8 +77,10 @@ namespace RAT {
 	  {
 	    G4int A = (pid-100000000)/1000;
 	    G4int Z = (pid-100000000) - A*1000;
-	    G4double excitationEnergy = 0.0; // assume all in ground state
-	    particleDef = G4IonTable::GetIonTable()->GetIon(Z, A, excitationEnergy);
+	    //G4double excitationEnergy = 0.0; // assume all in ground state
+	    //particleDef = G4IonTable::GetIonTable()->GetIon(Z, A, excitationEnergy); // must be for geant4.10
+	    particleDef = G4ParticleTable::GetParticleTable()->GetIonTable()->GetIon(Z, A);   // call for geant4.9.6.p04
+	    // fuck it for now
 	  }
 	else {
 	  if( pid == DecayBeta ) 

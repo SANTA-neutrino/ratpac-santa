@@ -71,6 +71,7 @@ namespace RAT {
 
     // The decay chain for the isotope selected by the user.
     DecayChain* fDecayChain;
+    
   };
 
 } // namespace RAT

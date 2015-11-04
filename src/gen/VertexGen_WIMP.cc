@@ -72,10 +72,11 @@ namespace RAT {
     if (is.fail())
       Log::Die("VertexGen_WIMP: Incorrect vertex setting " + newValues);
 
+    
     if (fNucleusName == "Ar40")
-      fNucleus = G4IonTable::GetIonTable()->GetIon(18, 40, 0.0);
+      fNucleus = G4ParticleTable::GetParticleTable()->GetIonTable()->GetIon(18,40); //G4IonTable::GetIonTable()->GetIon(18, 40, 0.0);
     else if (fNucleusName == "Ne20")
-      fNucleus = G4IonTable::GetIonTable()->GetIon(10, 20, 0.0);
+      fNucleus = G4ParticleTable::GetParticleTable()->GetIonTable()->GetIon(10, 20); //G4IonTable::GetIonTable()->GetIon(10, 20, 0.0);
     else
       Log::Die("VertexGen_WIMP: Unknown nucleus " + fNucleusName);
 
