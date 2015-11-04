@@ -12,6 +12,7 @@
 #include <RAT/Factory.hh>
 #include <RAT/GLG4VertexGen.hh>
 #include <RAT/VertexGen_IBD.hh>
+#include <RAT/VertexGen_ReacIBD.hh>
 #include <RAT/Gen_LED.hh>
 #include <RAT/VertexGen_ES.hh>
 #include <RAT/VertexGen_Spectrum.hh>
@@ -19,6 +20,7 @@
 #include <RAT/Coincidence_Gen.hh>
 #include <RAT/VertexFile_Gen.hh>
 #include <RAT/CfGen.hh>
+#include <RAT/ReacIBDgen.hh>
 #include <RAT/EventInfo.hh>
 #include <RAT/TrackInfo.hh>
 #include <RAT/PrimaryVertexInformation.hh>
@@ -97,7 +99,10 @@ void Gsim::Init() {
   GlobalFactory<GLG4VertexGen>::Register("ibd",
                                          new Alloc<GLG4VertexGen,
                                          VertexGen_IBD>);
-  GlobalFactory<GLG4VertexGen>::Register("es",
+  GlobalFactory<GLG4VertexGen>::Register("reacibd",
+                                         new Alloc<GLG4VertexGen,
+                                         VertexGen_ReacIBD>);
+   GlobalFactory<GLG4VertexGen>::Register("es",
                                          new Alloc<GLG4VertexGen,
                                          VertexGen_ES>);
   GlobalFactory<GLG4VertexGen>::Register("spectrum",
@@ -536,8 +541,8 @@ void Gsim::MakeEvent(const G4Event* g4ev, DS::Root* ds) {
 
   // Get the PMT type for IDPMTs. Then in the loop,
   // increment numPE only when the PE is in an IDPMT.
-  // Map from PMT ID numbers to objects for use later in noise calculation
-  std::map<int, DS::MCPMT*> mcpmtObjects;
+  //Map ID-INDEX for later noise calculation
+  std::map<int, int> mcpmtObjects;
 
   for (int ipmt=0; ipmt<hitpmts->GetEntries(); ipmt++) {
     GLG4HitPMT* a_pmt= hitpmts->GetPMT(ipmt);
@@ -546,7 +551,7 @@ void Gsim::MakeEvent(const G4Event* g4ev, DS::Root* ds) {
     // Create and initialize a RAT DS::MCPMT 
     // note that GLG4HitPMTs are given IDs which are their index
     DS::MCPMT* rat_mcpmt = mc->AddNewMCPMT();
-    mcpmtObjects[a_pmt->GetID()] = rat_mcpmt;
+    mcpmtObjects[a_pmt->GetID()] = mc->GetMCPMTCount()-1; //the index of the last element represents the index of the PMT we just added
     rat_mcpmt->SetID(a_pmt->GetID());
 
     DS::Run* run = DS::RunStore::GetRun(runID);
@@ -608,11 +613,11 @@ void Gsim::MakeEvent(const G4Event* g4ev, DS::Root* ds) {
     // Add the PMT if it did not register a "real" hit
     if (!mcpmtObjects.count(pmtid)) {
       DS::MCPMT* rat_mcpmt = mc->AddNewMCPMT();
-      mcpmtObjects[pmtid] = rat_mcpmt;
+      mcpmtObjects[pmtid] = mc->GetMCPMTCount()-1; //at this point the size represent the index
       rat_mcpmt->SetID(pmtid);
       rat_mcpmt->SetType(fPMTInfo->GetType(pmtid));
     }
-    AddMCPhoton(mcpmtObjects[pmtid], hit, true, (StoreOpticalTrackID ? exinfo : NULL));
+    AddMCPhoton(mc->GetMCPMT(mcpmtObjects[pmtid]), hit, true, (StoreOpticalTrackID ? exinfo : NULL));
   }
 }
 
